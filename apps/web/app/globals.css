@@ -1,0 +1,42 @@
+:root {
+  --bg: #0f1419;
+  --panel: #16202a;
+  --line: #2f3b47;
+  --text: #e7e9ea;
+  --muted: #8b98a5;
+  --accent: #1d9bf0;
+  --ok: #00ba7c;
+  --warn: #ffd400;
+  --bad: #f4212e;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 system-ui, -apple-system, sans-serif; }
+header { display: flex; align-items: center; gap: 24px; padding: 12px 20px; border-bottom: 1px solid var(--line); }
+header nav { display: flex; gap: 16px; flex: 1; }
+a { color: var(--accent); text-decoration: none; }
+.brand { font-weight: 700; color: var(--text); }
+main { max-width: 640px; margin: 0 auto; padding: 24px 16px 64px; }
+h1 { font-size: 24px; margin: 0 0 8px; }
+h2 { font-size: 18px; margin-top: 32px; }
+label { display: block; margin: 16px 0; color: var(--muted); }
+input, textarea { width: 100%; padding: 10px 12px; margin-top: 6px; background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 8px; font: inherit; }
+textarea { resize: vertical; }
+button, .button { display: inline-block; padding: 9px 18px; border-radius: 999px; border: 0; background: var(--accent); color: #fff; font: inherit; font-weight: 600; cursor: pointer; white-space: nowrap; }
+button:disabled { opacity: 0.4; cursor: default; }
+button.ghost { background: transparent; color: var(--text); border: 1px solid var(--line); }
+.row { display: flex; gap: 12px; align-items: center; justify-content: space-between; margin-top: 8px; }
+.row input { margin-top: 0; }
+.post { margin-bottom: 16px; }
+.muted { color: var(--muted); }
+.over, .error { color: var(--bad); }
+code { font-size: 13px; background: var(--panel); padding: 1px 6px; border-radius: 4px; word-break: break-all; }
+pre { white-space: pre-wrap; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px; font: inherit; }
+.steps { padding-left: 20px; }
+.steps li { margin-bottom: 24px; }
+.steps input { margin-top: 12px; }
+.verdict { margin-top: 16px; padding: 14px 16px; border-radius: 8px; border: 1px solid var(--line); }
+.verdict p { margin: 4px 0 0; }
+.verdict.ok { border-color: var(--ok); }
+.verdict.warn { border-color: var(--warn); }
+.verdict.bad { border-color: var(--bad); }

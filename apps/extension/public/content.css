@@ -1,0 +1,6 @@
+.xattest-badge { margin-left: 6px; font-size: 13px; cursor: help; white-space: nowrap; }
+.xattest-badge.ok { color: #00ba7c; }
+.xattest-badge.warn { color: #ffd400; }
+.xattest-badge.bad { color: #f4212e; }
+article.xattest-flagged { box-shadow: inset 3px 0 0 #f4212e; }
+article.xattest-unattested { box-shadow: inset 3px 0 0 #ffd400; }

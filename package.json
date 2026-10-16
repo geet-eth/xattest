@@ -1,0 +1,12 @@
+{
+  "name": "xattest",
+  "private": true,
+  "workspaces": ["packages/*", "apps/*"],
+  "scripts": {
+    "dev:api": "npm run dev -w @xattest/api",
+    "dev:web": "npm run dev -w @xattest/web",
+    "build:ext": "npm run build -w @xattest/extension",
+    "test": "npm test -w @xattest/core",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  }
+}
