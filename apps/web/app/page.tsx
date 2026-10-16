@@ -5,6 +5,7 @@ import {
 } from '@xattest/core'
 import { api } from '@/lib/api'
 import { useSigner } from '@/lib/useSigner'
+import { network } from '@/lib/network'
 
 type Published = { tag: string; texts: string[]; expiresAtMs: number }
 
@@ -26,7 +27,7 @@ export default function Compose() {
     setError('')
     setBusy(true)
     try {
-      const prepared = preparePosts({ handle, posts })
+      const prepared = preparePosts({ network, handle, posts })
       const envelope = await sign(prepared)
       await api.publish(envelope)
       setPublished({ tag: prepared.tag, texts: prepared.texts, expiresAtMs: Number(prepared.typedData.message.expirationTime) * 1000 })

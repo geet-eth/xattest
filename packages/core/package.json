@@ -11,10 +11,12 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "pako": "^3.0.2",
     "viem": "^2.57.7"
   },
   "devDependencies": {
     "@ethereum-attestation-service/eas-sdk": "^2.10.0",
+    "@types/pako": "^2.0.4",
     "ethers": "^6.17.0",
     "typescript": "^7.0.2",
     "vitest": "^3.2.7"

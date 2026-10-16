@@ -6,7 +6,7 @@ import { VerdictBadge } from '@/components/VerdictBadge'
 
 export default function Verify() {
   const [url, setUrl] = useState('')
-  const [result, setResult] = useState<{ handle: string; verdict: Verdict } | null>(null)
+  const [result, setResult] = useState<{ handle: string; verdict: Verdict; easscanUrl?: string } | null>(null)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
 
@@ -36,6 +36,11 @@ export default function Verify() {
         <>
           <p className="muted">@{result.handle}</p>
           <VerdictBadge verdict={result.verdict} />
+          {result.easscanUrl && (
+            <p>
+              <a href={result.easscanUrl} target="_blank" rel="noreferrer">View attestation on EAS ↗</a>
+            </p>
+          )}
         </>
       )}
       {error && <p className="error">{error}</p>}

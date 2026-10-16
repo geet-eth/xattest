@@ -4,9 +4,13 @@ import { isAddress, type Address } from 'viem'
 import { normalizeHandle, prepareBinding, tweetIdFromUrl, tweetIntentUrl, type AttestationEnvelope, type Registration } from '@xattest/core'
 import { api } from '@/lib/api'
 import { useSigner } from '@/lib/useSigner'
+import { useSchemas } from '@/lib/useSchemas'
+import { network } from '@/lib/network'
 
 export default function Register() {
-  const { address, sign } = useSigner()
+  const { address, sign, ensureChain } = useSigner()
+  const schemas = useSchemas()
+  const [status, setStatus] = useState('')
   const [handle, setHandle] = useState('')
   const [registration, setRegistration] = useState<Registration | null | undefined>()
   const [newKey, setNewKey] = useState('')
@@ -22,8 +26,17 @@ export default function Register() {
     try {
       await fn()
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e))
+      setError(e instanceof Error ? e.message.split('\n')[0] : String(e))
+    } finally {
+      setStatus('')
     }
+  }
+
+  async function ensureSchemas() {
+    if (schemas.missing.length === 0) return
+    await ensureChain()
+    setStatus(`Registering ${schemas.missing.length} EAS schema(s) on ${network.name}: confirm in your wallet…`)
+    await schemas.ensureRegistered()
   }
 
   const lookup = () => run(async () => setRegistration(await api.registration(h).catch(() => null)))
@@ -31,7 +44,10 @@ export default function Register() {
   // First key: the wallet signs its own binding, then the account proves it by posting the tag.
   const signFirstKey = () =>
     run(async () => {
-      const prepared = prepareBinding({ handle: h, key: address as Address })
+      // Registration is the first on-chain moment for a new deployment, so schemas get created here if missing.
+      await ensureSchemas()
+      setStatus('Sign the binding in your wallet…')
+      const prepared = prepareBinding({ network, handle: h, key: address as Address })
       setPending({ envelope: await sign(prepared), proofText: prepared.proofText })
     })
 
@@ -46,7 +62,7 @@ export default function Register() {
   const addKey = () =>
     run(async () => {
       if (!isAddress(newKey)) throw new Error('not an address')
-      setDone(await api.bind(await sign(prepareBinding({ handle: h, key: newKey }))))
+      setDone(await api.bind(await sign(prepareBinding({ network, handle: h, key: newKey }))))
     })
 
   if (done) {
@@ -76,7 +92,9 @@ export default function Register() {
             Not registered yet. Your connected wallet becomes the first signing key. You&apos;ll post one proof from
             @{h} so we know the account agrees.
           </p>
-          <button disabled={!address} onClick={signFirstKey}>{address ? 'Sign binding' : 'Connect a wallet'}</button>
+          <button disabled={!address || schemas.loading} onClick={signFirstKey}>
+            {!address ? 'Connect a wallet' : schemas.missing.length ? 'Register schemas & sign binding' : 'Sign binding'}
+          </button>
         </>
       )}
 
@@ -104,7 +122,25 @@ export default function Register() {
           </div>
         </>
       )}
+      {status && <p className="muted">{status}</p>}
       {error && <p className="error">{error}</p>}
+
+      <div className="schemas">
+        <h2>EAS schemas on {network.name}</h2>
+        {schemas.loading ? (
+          <p className="muted">Checking…</p>
+        ) : schemas.missing.length === 0 ? (
+          <p className="muted">✓ Registered. Attestations show up on <a href={network.easscan} target="_blank" rel="noreferrer">easscan</a>.</p>
+        ) : (
+          <>
+            <p className="muted">
+              Not registered yet: {schemas.missing.map((s) => s.name).join(', ')}. This is a one-time transaction for
+              the whole app; the first registration above does it automatically.
+            </p>
+            <button className="ghost" disabled={!address} onClick={() => run(ensureSchemas)}>Register schemas</button>
+          </>
+        )}
+      </div>
     </section>
   )
 }

@@ -6,6 +6,7 @@ const LABELS: Record<Verdict['status'], { icon: string; text: string; tone: stri
   invalid: { icon: '❌', text: 'Invalid attestation', tone: 'bad' },
   replayed: { icon: '❌', text: 'Copy of an earlier attested post', tone: 'bad' },
   unregistered: { icon: '·', text: 'This account doesn’t use xattest', tone: 'muted' },
+  'registration-proof': { icon: '✅', text: 'Registration proof: this post linked a signing key to the account', tone: 'ok' },
   'pre-registration': { icon: '·', text: 'Posted before this account started signing', tone: 'muted' },
 }
 
@@ -18,6 +19,11 @@ export function VerdictBadge({ verdict }: { verdict: Verdict }) {
       {verdict.status === 'attested' && (
         <p>
           Post {verdict.index} of {verdict.total}, signed by <code>{verdict.signer}</code>
+        </p>
+      )}
+      {verdict.status === 'registration-proof' && (
+        <p>
+          Key <code>{verdict.key}</code>
         </p>
       )}
       {verdict.status === 'replayed' && (

@@ -6,7 +6,7 @@ mkdirSync('dist', { recursive: true })
 cpSync('public', 'dist', { recursive: true })
 
 const options = {
-  entryPoints: ['src/content.ts', 'src/background.ts'],
+  entryPoints: ['src/content.ts', 'src/background.ts', 'src/popup.ts'],
   outdir: 'dist',
   bundle: true,
   format: 'esm',

@@ -38,6 +38,8 @@ export type Tweet = {
 export type Verdict =
   | { status: 'unregistered' }
   | { status: 'pre-registration' }
+  /** The post that linked a signing key to the account. */
+  | { status: 'registration-proof'; key: Address }
   | { status: 'unattested' }
   | { status: 'attested'; uid: Hex; index: number; total: number; signer: Address }
   | { status: 'replayed'; uid: Hex; originalTweetId: string }

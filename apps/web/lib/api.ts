@@ -18,5 +18,5 @@ export const api = {
     call<{ uid: string; tag: string; receivedAtMs: number }>('/attestations', { method: 'POST', body: JSON.stringify({ envelope }) }),
   bind: (envelope: AttestationEnvelope, proofTweetId?: string) =>
     call<Registration>('/bindings', { method: 'POST', body: JSON.stringify({ envelope, proofTweetId }) }),
-  verify: (tweetId: string) => call<{ tweetId: string; handle: string; verdict: Verdict }>(`/verify?tweetId=${tweetId}`),
+  verify: (tweetId: string) => call<{ tweetId: string; handle: string; verdict: Verdict; easscanUrl?: string }>(`/verify?tweetId=${tweetId}`),
 }

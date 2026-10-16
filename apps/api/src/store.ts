@@ -1,9 +1,10 @@
 import { readFileSync, writeFileSync, mkdirSync, renameSync } from 'node:fs'
 import { dirname } from 'node:path'
+import type { Address } from 'viem'
 import type { AttestationEnvelope, PostAttestation, Registration } from '@xattest/core'
 
 export type StoredPost = PostAttestation & { envelope: AttestationEnvelope }
-export type StoredBinding = { uid: string; handle: string; key: string; envelope: AttestationEnvelope; proofTweetId?: string }
+export type StoredBinding = { uid: string; handle: string; key: Address; envelope: AttestationEnvelope; proofTweetId?: string }
 
 type Data = {
   registrations: Record<string, Registration>
@@ -48,6 +49,11 @@ export class Store {
     this.data.registrations[reg.handle] = reg
     this.data.bindings[binding.uid] = binding
     this.flush()
+  }
+
+  /** The binding whose proof post is this tweet, if any. */
+  bindingByProofTweet(tweetId: string): StoredBinding | null {
+    return Object.values(this.data.bindings).find((b) => b.proofTweetId === tweetId) ?? null
   }
 
   post(uid: string): StoredPost | null {

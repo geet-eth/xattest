@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { zeroHash } from 'viem'
 import {
-  hashPost, normalizeText, parseTag, preparePosts, tweetIdToMs, verifyTweet, weightedLength,
+  NETWORKS, hashPost, normalizeText, parseTag, preparePosts, tweetIdToMs, verifyTweet, weightedLength,
   type PostAttestation, type Registration,
 } from '../src/index.ts'
 
@@ -13,7 +13,7 @@ const T0 = 1_760_000_000_000
 const reg: Registration = { handle: 'acme', sinceMs: T0 - 86_400_000, keys: [{ address: SIGNER, bindingUid: zeroHash, addedAtMs: T0 - 86_400_000 }] }
 
 function attest(posts: string[]) {
-  const p = preparePosts({ handle: 'acme', posts, nowSeconds: T0 / 1000 })
+  const p = preparePosts({ network: NETWORKS['base-sepolia'], handle: 'acme', posts, nowSeconds: T0 / 1000 })
   const a: PostAttestation = {
     uid: p.uid, tag: p.tag, handle: 'acme', posts: posts.map(hashPost), signer: SIGNER,
     expiresAtMs: T0 + 30 * 60_000, receivedAtMs: T0,

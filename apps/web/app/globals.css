@@ -40,3 +40,5 @@ pre { white-space: pre-wrap; background: var(--panel); border: 1px solid var(--l
 .verdict.ok { border-color: var(--ok); }
 .verdict.warn { border-color: var(--warn); }
 .verdict.bad { border-color: var(--bad); }
+.pill { font-size: 12px; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--warn); color: var(--warn); }
+.schemas { margin-top: 40px; padding-top: 8px; border-top: 1px solid var(--line); }

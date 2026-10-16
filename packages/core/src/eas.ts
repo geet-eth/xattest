@@ -12,18 +12,13 @@ import {
   type Hex,
 } from 'viem'
 
-// EAS is a predeploy on Base (and other OP Stack chains).
-export const EAS_CHAIN_ID = 8453
-export const EAS_ADDRESS: Address = '0x4200000000000000000000000000000000000021'
-// Read from the contract's version() on Base. EIP-712 domains must match it exactly.
-export const EAS_VERSION = '1.0.1'
+import type { Network } from './network.ts'
 
-export const EAS_DOMAIN = {
-  name: 'EAS Attestation',
-  version: EAS_VERSION,
-  chainId: EAS_CHAIN_ID,
-  verifyingContract: EAS_ADDRESS,
-} as const
+export type EasDomain = { name: 'EAS Attestation'; version: string; chainId: number; verifyingContract: Address }
+
+export function easDomain(network: Network): EasDomain {
+  return { name: 'EAS Attestation', version: network.easVersion, chainId: network.chainId, verifyingContract: network.eas }
+}
 
 // Offchain attestation v2 (with salt), identical to eas-sdk's OFFCHAIN_ATTESTATION_TYPES[2].
 export const ATTEST_TYPES = {
@@ -54,6 +49,12 @@ export const BINDING_SCHEMA = 'string handle'
 export const POST_SCHEMA_UID = schemaUid(POST_SCHEMA)
 export const BINDING_SCHEMA_UID = schemaUid(BINDING_SCHEMA)
 
+/** Every schema xattest uses. Registered once per chain, by anyone; UIDs don't depend on who registers. */
+export const SCHEMAS = [
+  { name: 'post', schema: POST_SCHEMA, uid: POST_SCHEMA_UID },
+  { name: 'binding', schema: BINDING_SCHEMA, uid: BINDING_SCHEMA_UID },
+] as const
+
 export type AttestMessage = {
   version: number
   schema: Hex
@@ -71,7 +72,7 @@ export type AttestationEnvelope = {
   sig: {
     version: number
     uid: Hex
-    domain: typeof EAS_DOMAIN
+    domain: EasDomain
     primaryType: 'Attest'
     types: typeof ATTEST_TYPES
     message: Omit<AttestMessage, 'time' | 'expirationTime'> & { time: string; expirationTime: string }
@@ -116,7 +117,7 @@ export function decodeBindingData(data: Hex): { handle: string } {
 export type UnsignedAttestation = {
   uid: Hex
   typedData: {
-    domain: typeof EAS_DOMAIN
+    domain: EasDomain
     types: typeof ATTEST_TYPES
     primaryType: 'Attest'
     message: AttestMessage
@@ -124,6 +125,7 @@ export type UnsignedAttestation = {
 }
 
 export function buildAttestation(params: {
+  network: Network
   schema: Hex
   data: Hex
   recipient?: Address
@@ -145,7 +147,7 @@ export function buildAttestation(params: {
   }
   return {
     uid: offchainUid(message),
-    typedData: { domain: EAS_DOMAIN, types: ATTEST_TYPES, primaryType: 'Attest', message },
+    typedData: { domain: easDomain(params.network), types: ATTEST_TYPES, primaryType: 'Attest', message },
   }
 }
 
@@ -156,7 +158,7 @@ export function toEnvelope(unsigned: UnsignedAttestation, signature: Hex, signer
     sig: {
       version: OFFCHAIN_VERSION,
       uid: unsigned.uid,
-      domain: EAS_DOMAIN,
+      domain: unsigned.typedData.domain,
       primaryType: 'Attest',
       types: ATTEST_TYPES,
       message: { ...message, time: message.time.toString(), expirationTime: message.expirationTime.toString() },
@@ -183,7 +185,7 @@ export function signatureOf(env: AttestationEnvelope): Hex {
 export function verifyArgs(env: AttestationEnvelope) {
   return {
     address: env.signer,
-    domain: EAS_DOMAIN,
+    domain: { ...env.sig.domain, chainId: Number(env.sig.domain.chainId) },
     types: ATTEST_TYPES,
     primaryType: 'Attest' as const,
     message: messageOf(env),
@@ -191,14 +193,15 @@ export function verifyArgs(env: AttestationEnvelope) {
   }
 }
 
-/** Structural checks that don't need a signature check: domain, types, UID. */
-export function checkEnvelopeShape(env: AttestationEnvelope): string | null {
+/** Structural checks that don't need a signature check: domain (for this network), types, UID. */
+export function checkEnvelopeShape(env: AttestationEnvelope, network: Network): string | null {
   const d = env.sig.domain
+  const expected = easDomain(network)
+  if (Number(d.chainId) !== expected.chainId) return `signed for chain ${d.chainId}, this server uses ${network.name} (${expected.chainId})`
   if (
-    d.name !== EAS_DOMAIN.name ||
-    d.version !== EAS_DOMAIN.version ||
-    Number(d.chainId) !== EAS_DOMAIN.chainId ||
-    d.verifyingContract.toLowerCase() !== EAS_ADDRESS.toLowerCase()
+    d.name !== expected.name ||
+    d.version !== expected.version ||
+    d.verifyingContract.toLowerCase() !== expected.verifyingContract.toLowerCase()
   ) return 'wrong EIP-712 domain'
   if (env.sig.primaryType !== 'Attest' || env.sig.version !== OFFCHAIN_VERSION) return 'unsupported attestation version'
   if (offchainUid(messageOf(env)) !== env.sig.uid) return 'uid does not match message'

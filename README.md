@@ -30,7 +30,7 @@ People without the extension can see the tag and check it on the verify page. Th
 | ❌ `replayed` | Copy of an earlier signed post |
 | — `unregistered` / `pre-registration` | No badge |
 
-Attestations use EAS's offchain format (v2, Base, `EAS 1.0.1` domain), so they can be checked with the EAS SDK or easscan. Schemas:
+Attestations use EAS's offchain format (v2), so they can be checked with the EAS SDK or opened on easscan (the verify page links there). Schemas:
 
 - post: `string handle,bytes32[] posts`
 - binding: `string handle` (recipient = the key)
@@ -58,8 +58,10 @@ npm run build:ext      # then load apps/extension/dist as an unpacked extension
 
 Env:
 
-- `apps/api`: `PORT`, `DATA_PATH`, `BASE_RPC_URL` (used for EIP-1271 smart-wallet signatures)
-- `apps/web`: `NEXT_PUBLIC_API_URL`
+- `apps/api`: `XATTEST_NETWORK` (`base-sepolia` default, or `base`), `PORT`, `DATA_PATH` (default `data/<network>.json`), `LOG_PATH`, `RPC_URL` (used for EIP-1271 smart-wallet signatures)
+- `apps/web`: `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_XATTEST_NETWORK` (must match the API)
+
+The EIP-712 domain differs per chain (EAS is `1.0.1` on Base, `1.2.0` on Base Sepolia), so the API rejects attestations signed for the other network. Schemas are registered once per chain; the first registration in the web app does it: one batched call (EIP-5792) if the wallet supports batching natively, otherwise one transaction per schema.
 - extension build: `XATTEST_API_URL`. Also add the production API origin to `host_permissions` in `apps/extension/public/manifest.json`.
 
 ## Known gaps / next up
@@ -70,4 +72,3 @@ Env:
 - **Fetching posts.** It uses X's unofficial syndication endpoint (`apps/api/src/twitter.ts`), which can change or rate-limit. Fall back to the official API if needed.
 - **Normalization.** Build fixtures from real posts: emoji, long posts, quote posts, media, edits.
 - **Thread continuity.** Check that part *n* replies to part *n-1*.
-- **Schemas** aren't registered on-chain yet (UIDs are deterministic, so registering later doesn't change them).
