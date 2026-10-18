@@ -1,4 +1,7 @@
-.xattest-badge { margin-left: 6px; font-size: 13px; cursor: help; white-space: nowrap; }
+/* Content-script CSS can only reach extension files through this URL form. */
+@font-face { font-family: 'Lato'; font-style: normal; font-weight: 400; font-display: swap; src: url('chrome-extension://__MSG_@@extension_id__/fonts/lato-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Lato'; font-style: normal; font-weight: 700; font-display: swap; src: url('chrome-extension://__MSG_@@extension_id__/fonts/lato-latin-700-normal.woff2') format('woff2'); }
+.xattest-badge { margin-left: 6px; font-family: 'Lato', system-ui, sans-serif; font-weight: 700; font-size: 13px; cursor: help; white-space: nowrap; }
 .xattest-badge.ok { color: #00ba7c; }
 .xattest-badge.warn { color: #ffd400; }
 .xattest-badge.bad { color: #f4212e; }
